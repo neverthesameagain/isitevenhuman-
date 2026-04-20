@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>isitEven Human?</title>
+    <meta name="description"
+        content="Detect AI-generated text with selectable feature groups across 114 stylometric dimensions.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+
+<body>
+
+    <div class="bg-blob blob-1"></div>
+    <div class="bg-blob blob-2"></div>
+    <div class="bg-blob blob-3"></div>
+
+    <div class="app-container">
+
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <span class="logo-icon">◈</span>
+                <span class="logo-text">isitEven Human?</span>
+            </div>
+        </header>
+
+        <!-- Controls row -->
+        <div class="controls-row">
+            <!-- Model selector -->
+            <div class="control-block">
+                <label class="control-label">Model Weights</label>
+                <div class="toggle-group" id="modelToggle">
+                    <button class="toggle-btn active" data-model="new">New Model</button>
+                    <button class="toggle-btn" data-model="old">Old Model</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feature Group Selector -->
+        <section class="feature-selector-section">
+            <div class="fs-header">
+                <h2 class="fs-title">Feature Groups</h2>
+                <div class="fs-actions">
+                    <button class="fs-action-btn" id="selectAll">All On</button>
+                    <button class="fs-action-btn" id="selectNone">All Off</button>
+                </div>
+            </div>
+            <div class="fs-grid" id="featureGroupGrid">
+                <!-- Populated by JS -->
+            </div>
+        </section>
+
+        <!-- Input area -->
+        <section class="input-section">
+            <div class="textarea-wrap">
+                <textarea id="textInput" placeholder="Paste or type text to analyze…" rows="8"></textarea>
+                <span class="char-count" id="charCount">0 chars</span>
+            </div>
+            <button class="analyze-btn" id="analyzeBtn">
+                <span class="btn-text">Analyze Text</span>
+                <span class="btn-loader" id="btnLoader"></span>
+            </button>
+        </section>
+
+        <!-- Results -->
+        <section class="results-section" id="resultsSection" style="display:none;">
+
+            <div class="verdict-card" id="verdictCard">
+                <div class="verdict-badge" id="verdictBadge"></div>
+                <div class="verdict-meta">
+                    <span class="verdict-label" id="verdictLabel"></span>
+                    <span class="verdict-model" id="verdictModel"></span>
+                </div>
+            </div>
+
+            <div class="gauge-row">
+                <div class="gauge-item">
+                    <div class="gauge-ring">
+                        <svg viewBox="0 0 120 120">
+                            <circle class="gauge-track" cx="60" cy="60" r="52" />
+                            <circle class="gauge-fill gauge-fill-ai" cx="60" cy="60" r="52" id="gaugeFillAI" />
+                        </svg>
+                        <span class="gauge-value" id="gaugeValAI">0%</span>
+                    </div>
+                    <span class="gauge-label">AI Probability</span>
+                </div>
+                <div class="gauge-item">
+                    <div class="gauge-ring">
+                        <svg viewBox="0 0 120 120">
+                            <circle class="gauge-track" cx="60" cy="60" r="52" />
+                            <circle class="gauge-fill gauge-fill-human" cx="60" cy="60" r="52" id="gaugeFillHuman" />
+                        </svg>
+                        <span class="gauge-value" id="gaugeValHuman">0%</span>
+                    </div>
+                    <span class="gauge-label">Human Probability</span>
+                </div>
+            </div>
+
+            <!-- Sentence-level analysis -->
+            <div class="sentence-panel">
+                <div class="sentence-panel-header">
+                    <h2 class="sentence-panel-title">Sentence-Level Analysis</h2>
+                    <div class="sentence-legend">
+                        <span class="legend-dot legend-ai"></span><span class="legend-text">AI-generated</span>
+                        <span class="legend-dot legend-human"></span><span class="legend-text">Human-written</span>
+                    </div>
+                </div>
+                <div class="sentence-highlight-area" id="sentenceHighlightArea"></div>
+            </div>
+
+            <!-- Feature breakdown -->
+            <div class="features-panel">
+                <div class="features-header">
+                    <h2 class="features-title">Feature Breakdown</h2>
+                    <div class="features-meta">
+                        <span class="feature-count" id="featureCount"></span>
+                        <span class="feature-active-count" id="featureActiveCount"></span>
+                    </div>
+                    <div class="features-filter-row">
+                        <input type="text" class="feature-search" id="featureSearch" placeholder="Search features…">
+                        <select class="feature-group-filter" id="featureGroupFilter">
+                            <option value="all">All Groups</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="features-grid" id="featuresGrid"></div>
+            </div>
+        </section>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+
+</html>
