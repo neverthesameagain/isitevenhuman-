@@ -232,33 +232,6 @@ def predict(req: PredictRequest):
         prob = float(model.predict_proba(X_np)[0][1])
         pred = int(model.predict(X_np)[0])
 
-        # ── Sentence-level prediction ──
-        doc = nlp(req.text)
-        sentences = [s.text.strip() for s in doc.sents if len(s.text.strip()) > 3]
-
-        sentence_results = []
-        for sent_text in sentences:
-            try:
-                s_X, _ = build_feature_vector(sent_text, feature_columns, req.enabled_groups)
-                s_np = s_X.values.astype(np.float64)
-
-                s_prob = float(model.predict_proba(s_np)[0][1])
-                s_pred = int(model.predict(s_np)[0])
-
-                sentence_results.append({
-                    "text": sent_text,
-                    "prediction": "ai" if s_pred == 1 else "human",
-                    "probability_ai": round(s_prob, 4),
-                })
-
-            except Exception as e:
-                print(f"[Sentence Error] {str(e)}")  # 🔍 debug
-                sentence_results.append({
-                    "text": sent_text,
-                    "prediction": "unknown",
-                    "probability_ai": 0.5,
-                })
-
         # ── Feature annotation ──
         feature_details = OrderedDict()
         for col in feature_columns:
@@ -294,7 +267,6 @@ def predict(req: PredictRequest):
             "feature_count": len(feature_columns),
             "active_features": sum(1 for f in feature_details.values() if f["active"]),
             "features": feature_details,
-            "sentences": sentence_results,
         }
 
     except HTTPException as e:
