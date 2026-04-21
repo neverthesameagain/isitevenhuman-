@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════
-   TextScope v2 — Frontend Logic
+   isitEven Human? — Frontend Logic
    ═══════════════════════════════════════════════════════════ */
 
 (function () {
@@ -17,20 +17,13 @@
     const gaugeFillHuman = document.getElementById("gaugeFillHuman");
     const gaugeValAI = document.getElementById("gaugeValAI");
     const gaugeValHuman = document.getElementById("gaugeValHuman");
-    const featureCount = document.getElementById("featureCount");
-    const featureActive = document.getElementById("featureActiveCount");
-    const featuresGrid = document.getElementById("featuresGrid");
-    const featureSearch = document.getElementById("featureSearch");
-    const featureGroupFilter = document.getElementById("featureGroupFilter");
     const featureGroupGrid = document.getElementById("featureGroupGrid");
     const selectAllBtn = document.getElementById("selectAll");
     const selectNoneBtn = document.getElementById("selectNone");
-    const sentenceArea = document.getElementById("sentenceHighlightArea");
 
     let currentModel = "new";
     let enabledGroups = new Set();
     let featureGroups = [];
-    let lastFeatures = {};
 
     const CIRCUMFERENCE = 2 * Math.PI * 52;
 
@@ -56,7 +49,6 @@
             featureGroups = data.groups;
             featureGroups.forEach(g => enabledGroups.add(g.key));
             renderGroupChips();
-            populateGroupFilter();
         } catch (e) {
             console.error("Failed to load feature groups:", e);
         }
@@ -85,15 +77,6 @@
                 }
             });
             featureGroupGrid.appendChild(chip);
-        });
-    }
-
-    function populateGroupFilter() {
-        featureGroups.forEach(g => {
-            const opt = document.createElement("option");
-            opt.value = g.key;
-            opt.textContent = g.label;
-            featureGroupFilter.appendChild(opt);
         });
     }
 
@@ -131,7 +114,6 @@
                 body: JSON.stringify(body),
             });
 
-            // ✅ Read response only once
             const responseText = await res.text();
 
             let data;
@@ -166,7 +148,7 @@
         verdictBadge.textContent = isAI ? "AI" : "H";
         verdictLabel.textContent = data.prediction;
         verdictLabel.style.color = isAI ? "var(--ai-color)" : "var(--human-color)";
-        verdictModel.textContent = `Model: ${data.model_variant} · ${data.active_features}/${data.feature_count} features active`;
+        verdictModel.textContent = `Inference processed!`;
 
         // Gauges
         requestAnimationFrame(() => {
@@ -176,89 +158,9 @@
         gaugeValAI.textContent = (data.probability_ai * 100).toFixed(1) + "%";
         gaugeValHuman.textContent = (data.probability_human * 100).toFixed(1) + "%";
 
-        // ── Sentence-level highlighting ──
-        renderSentences(data.sentences || []);
-
-        // Feature counts
-        featureCount.textContent = data.feature_count + " total";
-        featureActive.textContent = data.active_features + " active";
-
-        // Features
-        lastFeatures = data.features;
-        renderFeatureCards(lastFeatures);
-
         resultsSection.style.display = "block";
         resultsSection.scrollIntoView({ behavior: "smooth", block: "start" });
     }
-
-    // ── Sentence rendering ──────────────────────────────────
-    function renderSentences(sentences) {
-        sentenceArea.innerHTML = "";
-        if (!sentences.length) {
-            sentenceArea.textContent = "No sentences detected.";
-            return;
-        }
-        sentences.forEach(s => {
-            const span = document.createElement("span");
-            span.className = "sent-span sent-" + s.prediction;
-            span.textContent = s.text + " ";
-
-            // Tooltip with probability
-            const tip = document.createElement("span");
-            tip.className = "sent-tooltip";
-            const pct = (s.probability_ai * 100).toFixed(1);
-            tip.textContent = s.prediction === "ai"
-                ? `AI ${pct}%`
-                : `Human ${(100 - pct).toFixed(1)}%`;
-            span.appendChild(tip);
-
-            sentenceArea.appendChild(span);
-        });
-    }
-
-    // ── Feature cards ───────────────────────────────────────
-    function renderFeatureCards(features, textFilter = "", groupFilter = "all") {
-        featuresGrid.innerHTML = "";
-        const entries = Object.entries(features);
-        const maxVal = Math.max(...entries.map(([, f]) => Math.abs(f.value)), 1e-9);
-
-        entries.forEach(([name, info]) => {
-            if (textFilter && !name.toLowerCase().includes(textFilter.toLowerCase())) return;
-            if (groupFilter !== "all" && info.group !== groupFilter) return;
-
-            const card = document.createElement("div");
-            card.className = "feat-card" + (info.active ? "" : " inactive");
-
-            const barWidth = Math.min(100, (Math.abs(info.value) / maxVal) * 100);
-            const groupLabel = featureGroups.find(g => g.key === info.group);
-
-            card.innerHTML = `
-                <div class="feat-card-header">
-                    <span class="feat-name" title="${name}">${name}</span>
-                    <span class="feat-group-tag">${groupLabel ? groupLabel.label.split(" ")[0] : info.group}</span>
-                </div>
-                <span class="feat-value">${formatValue(info.value)}</span>
-                <div class="feat-bar">
-                    <div class="feat-bar-fill" style="width:${barWidth}%"></div>
-                </div>
-            `;
-            featuresGrid.appendChild(card);
-        });
-    }
-
-    function formatValue(v) {
-        if (Number.isInteger(v)) return v.toString();
-        if (Math.abs(v) < 0.0001 && v !== 0) return v.toExponential(2);
-        return v.toFixed(4);
-    }
-
-    // ── Filters ─────────────────────────────────────────────
-    featureSearch.addEventListener("input", () => {
-        renderFeatureCards(lastFeatures, featureSearch.value, featureGroupFilter.value);
-    });
-    featureGroupFilter.addEventListener("change", () => {
-        renderFeatureCards(lastFeatures, featureSearch.value, featureGroupFilter.value);
-    });
 
     // ── Init ────────────────────────────────────────────────
     loadFeatureGroups();
